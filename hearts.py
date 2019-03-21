@@ -47,9 +47,9 @@ class Hand:
             s1 += suit + ' ' * max((len(in_suit)), 1)
             s2 += ''.join(in_suit) + ' ' * max(2 - len(in_suit), 1)
         return s1 + s2
-
-    def shuffle(self):
-        shuffle(self.cards)
+    
+    def contains(self, card):
+        return card in self.cards
 
     def deal(self, num_players):
         hands = []
@@ -59,9 +59,33 @@ class Hand:
             hands[i].cards = self.cards[i*hand_size:(i+1)*hand_size]
         return hands
 
+    def extend(self, other):
+        for c in other.cards:
+            self.cards.append(c)
+
+    def get_cards(self):
+        return self.cards
+
+    def length(self):
+        return len(self.cards)
+
+    def remove_hand(self, other):
+        for c in other.cards:
+            self.cards.remove(c)
+
     def short_str(self):
         return ', '.join([str(c) for c in self.cards])
+
+    def shuffle(self):
+        shuffle(self.cards)
         
+    def subset_of(self, other):
+        other_copy = other.cards.copy()
+        for c in self.cards:
+            if c not in other_copy:
+                return False
+            other_copy.remove(c)
+        return True
 
 class Round:
     def __init__(self, server, pass_dir, num_tricks=13):
@@ -80,16 +104,22 @@ class Round:
 
     # TODO: threads
     def get_pass(self):
-        print(self.hands[0])
         msg = 'Choose 3 cards to pass ' + self.pass_dir + ': '
-        self.passes.append(Hand(input(msg)))
+        print(self.hands[0])
+        while True:
+            h = Hand(input(msg))
+            if h.length() == 3 and h.subset_of(self.hands[0]):
+                self.passes.append(h)
+                break
         for i in range(1, self.num_players):
             self.server.send(self.server.players[i], str(self.hands[i]))
-            self.passes.append(Hand(self.server.request(self.server.players[i],
-                                                        msg)))
+            while True:
+                h = Hand(self.server.request(self.server.players[i], msg))
+                if h.length() == 3 and h.subset_of(self.hands[i]):
+                    self.passes.append(h)
+                    break
         for i in range(self.num_players):
-            self.hands[i].cards = [c for c in self.hands[i].cards
-                                   if c not in self.passes[i].cards]
+            self.hands[i].remove_hand(self.passes[i])
 
     def distribute_pass(self):
         if self.pass_dir != 'hold':
@@ -100,7 +130,7 @@ class Round:
                     received = self.passes[(i-1) % self.num_players]
                 elif self.pass_dir == 'across':
                     received = self.passes[(i+2) % self.num_players]
-                self.hands[i].cards.extend(received.cards)
+                self.hands[i].extend(received)
                 if i == 0:
                     print('Received: ' + received.short_str())
                     print(self.hands[0])
@@ -109,16 +139,17 @@ class Round:
                                     'Received: ' + received.short_str())
                     self.server.send(self.server.players[i], str(self.hands[i]))
 
-    def play_trick(self)
+    def play_trick(self):
         pass
 
     def play(self):
         self.deal()
         self.get_pass()
         self.distribute_pass()
+        self.leader = [h.contains(Card('2c')) for h in self.hands].index(True)
         for i in range(self.num_tricks):
             self.play_trick()
-        # XXX
+        # TODO: fix
         self.scores = [0, 26, 26, 26]
 
 
