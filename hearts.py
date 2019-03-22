@@ -1,3 +1,6 @@
+# TODO: hiding old tricks, showing scores
+# TODO: passing threads
+
 from random import shuffle
 from socket import socket
 from time import sleep
@@ -127,7 +130,6 @@ class Round:
         deck.shuffle()
         self.hands = deck.deal(self.num_players)
 
-    # TODO: threads
     def get_pass(self):
         msg = 'Choose 3 cards to pass ' + self.pass_dir + ': '
         for i in range(self.num_players):
