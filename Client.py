@@ -1,4 +1,6 @@
 from socket import socket
+from Server import Server
+from threading import Thread
 
 
 class Client:
@@ -7,9 +9,9 @@ class Client:
         self.port = port
         self.sock = socket()
 
-    def connect_to_host(self, username, host_ip):
+    def connect(self, username, host_ip):
         self.sock.connect((host_ip, self.port))
-        #self.send(username)
+        self.send(username)
         print('Connected.')
 
     def loop(self, gui):
@@ -26,3 +28,7 @@ class Client:
 
     def send(self, msg):
         self.sock.sendall(msg.encode('utf-8'))
+
+    def start_server(self):
+        server = Server()
+        Thread(target=server.start_game).start()
