@@ -61,8 +61,6 @@ class GUI:
         self.lockout = True
         winner_num = self.usernames.index(winner_username)
         self.highlight_label(self.username_labels[winner_num])
-        # self.flash(self.username_labels[winner_num], self.highlight_label,
-        #            self.unhighlight_label)
         self.window.after(delay_ms, clear_cards)
 
     def flash_cards(self, cards):

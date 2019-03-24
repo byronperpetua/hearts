@@ -1,7 +1,8 @@
-from GUI import GUI
 from Client import Client
+from GUI import GUI
+import os
+import sys
 from threading import Thread
-
 
 def main():
     client = Client()
