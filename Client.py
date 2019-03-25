@@ -2,7 +2,6 @@ from socket import socket
 from Server import Server
 from threading import Thread
 
-
 class Client:
     def __init__(self, bufsize=1024, port=6642):
         self.bufsize = bufsize

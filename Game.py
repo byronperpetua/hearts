@@ -1,6 +1,5 @@
 from Round import Round
 
-
 class Game:
     def __init__(self, server, max_score=100,
                  pass_dirs=('left', 'right', 'across', 'hold')):

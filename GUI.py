@@ -1,8 +1,10 @@
 from os import listdir
+from os.path import dirname
+from Server import Server
+import sys
 import tkinter as tk
 from threading import Thread
 from time import sleep
-from Server import Server
 
 class GUI:
     def __init__(self, client):
@@ -13,6 +15,10 @@ class GUI:
         self.bg_color = 'dark green'
         self.fg_color = 'white'
         self.hl_color = 'dodger blue'
+        if getattr(sys, 'frozen', False):
+            self.image_dir = sys._MEIPASS + '/images/'
+        else:
+            self.image_dir = dirname(__file__) + '/images/'
         self.setup_gui()
         self.set_mode('wait')
 
@@ -52,6 +58,9 @@ class GUI:
 
     def disable_button(self, button):
         button.configure(state='disabled')
+
+    def enable_button(self, button):
+        button.configure(state='normal')
 
     def end_trick(self, winner_username, delay_ms=2000):
         def clear_cards():
@@ -153,22 +162,28 @@ class GUI:
                 img = self.images['blank']
             self.card_buttons[i].configure(image=img)
 
-    def set_mode(self, new_mode):
+    def set_mode(self, new_mode, delay_ms=1):
         self.mode = new_mode
         if new_mode == 'wait':
             for b in self.card_buttons:
+                # self.disable_button(b)
                 self.unhighlight_button(b)
             self.submit_button.configure(highlightbackground=self.bg_color)
-            self.window.after(100, self.disable_button, self.submit_button)
+            self.window.after(delay_ms, self.disable_button,
+                              self.submit_button)
         elif new_mode == 'pass':
             for b in self.card_buttons:
+                self.enable_button(b)
                 self.unhighlight_button(b)
             self.submit_button.configure(highlightbackground=self.hl_color)
-            self.window.after(100, self.disable_button, self.submit_button)
+            self.window.after(delay_ms, self.disable_button,
+                              self.submit_button)
         elif new_mode == 'play':
             for b in self.card_buttons:
+                self.enable_button(b)
                 self.unhighlight_button(b)
-            self.window.after(100, self.disable_button, self.submit_button)
+            self.window.after(delay_ms, self.disable_button,
+                              self.submit_button)
 
     def set_msg(self, msg):
         self.msg = msg
@@ -189,8 +204,8 @@ class GUI:
         self.window = tk.Tk()
         self.window.title('Hearts')
         self.images = {}
-        for f in listdir('images'):
-            self.images[f[:-4]] = tk.PhotoImage(file='images/'+f)
+        for f in listdir(self.image_dir):
+            self.images[f[:-4]] = tk.PhotoImage(file=self.image_dir+f)
         self.username_labels = [None]*4
         self.score_labels = [None]*4
         self.card_labels = [None]*4

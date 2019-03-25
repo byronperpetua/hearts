@@ -1,7 +1,6 @@
 from Card import Card
 from random import shuffle
 
-
 class Hand:
     def __init__(self, cards='', full_deck=False):
         if full_deck:

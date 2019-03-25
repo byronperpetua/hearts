@@ -1,7 +1,6 @@
 from Hand import Hand
 from Card import Card
 
-
 class Round:
     def __init__(self, server, pass_dir, num_tricks=13):
         self.num_players = len(server.usernames)
