@@ -11,6 +11,8 @@ class GUI:
         self.client = client
         self.msg = None
         self.selected = []
+        self.current_trick = [None] * 4
+        self.last_trick = [None] * 4
         self.lockout = False
         self.bg_color = 'dark green'
         self.fg_color = 'white'
@@ -74,6 +76,7 @@ class GUI:
         winner_num = self.usernames.index(winner_username)
         self.highlight_label(self.username_labels[winner_num])
         self.window.after(delay_ms, clear_cards)
+        self.last_trick = self.current_trick.copy()
 
     def flash_cards(self, cards):
         for c in cards:
@@ -89,6 +92,15 @@ class GUI:
 
     def highlight_label(self, button):
         button.configure(background=self.hl_color)
+
+    def last_trick_popup(self):
+        popup = tk.Toplevel(self.window)
+        popup.attributes('-topmost', True)
+        popup.title('Last trick')
+        tk.Label(popup, image=self.images[self.last_trick[0]]).grid(row=2, column=1)
+        tk.Label(popup, image=self.images[self.last_trick[1]]).grid(row=1, column=0)
+        tk.Label(popup, image=self.images[self.last_trick[2]]).grid(row=0, column=1)
+        tk.Label(popup, image=self.images[self.last_trick[3]]).grid(row=1, column=2)
 
     def moonshot_popup(self):
         popup = tk.Toplevel(self.window)
@@ -124,6 +136,9 @@ class GUI:
         elif self.mode == 'play' and not self.lockout:
             self.set_mode('wait')
             self.client.send(self.hand[card_num])
+
+    def on_last_trick_click(self, event):
+        self.last_trick_popup()
 
     def on_submit_click(self, event):
         if self.mode == 'pass' and len(self.selected) == 3:
@@ -263,10 +278,15 @@ class GUI:
                                        state='disabled', highlightthickness=5)
         self.submit_button.grid(row=9, column=13)
         self.submit_button.bind('<ButtonRelease>', self.on_submit_click)
+        self.last_trick_button = tk.Button(self.window, text='Show Last\nTrick')
+        self.last_trick_button.grid(row=0, column=13)
+        self.last_trick_button.bind('<ButtonRelease>', self.on_last_trick_click)
         self.window.configure(bg=self.bg_color)
 
     def show_card(self, username, card):
         player_num = self.usernames.index(username)
+        # Save trick in order to show last trick
+        self.current_trick[player_num] = card
         self.card_labels[player_num].configure(image=self.images[card])
         for l in self.username_labels:
             self.unhighlight_label(l)

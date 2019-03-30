@@ -1,6 +1,5 @@
-allow spaces in usernames
 simultaneous passing
-show last trick
+live login info
 round scores
 chat
 logging
