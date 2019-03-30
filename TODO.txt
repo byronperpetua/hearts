@@ -1,0 +1,6 @@
+allow spaces in usernames
+simultaneous passing
+show last trick
+round scores
+chat
+logging

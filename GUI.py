@@ -33,7 +33,9 @@ class GUI:
                 if is_server.get():
                     server = Server()
                     Thread(target=server.start_game).start()
-                self.client.connect(username.get(), ip.get())
+                    self.client.connect(username.get(), '127.0.0.1')
+                else:
+                    self.client.connect(username.get(), ip.get())
                 Thread(target=self.client.loop, args=(self,)).start()
                 popup.destroy()
         popup = tk.Toplevel(self.window)
