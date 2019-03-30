@@ -4,3 +4,4 @@ show last trick
 round scores
 chat
 logging
+quit

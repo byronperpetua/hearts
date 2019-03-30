@@ -28,14 +28,15 @@ class GUI:
         def disable_ip():
             ip_entry.configure(state='disabled')
         def submit(event):
-            if username.get() and (is_server.get() or ip.get()):
-                self.window.title('Hearts - ' + username.get())
+            name = username.get()
+            if name and (' ' not in name) and (is_server.get() or ip.get()):
+                self.window.title('Hearts - ' + name)
                 if is_server.get():
                     server = Server()
                     Thread(target=server.start_game).start()
-                    self.client.connect(username.get(), '127.0.0.1')
+                    self.client.connect(name, '127.0.0.1')
                 else:
-                    self.client.connect(username.get(), ip.get())
+                    self.client.connect(name, ip.get())
                 Thread(target=self.client.loop, args=(self,)).start()
                 popup.destroy()
         popup = tk.Toplevel(self.window)
@@ -49,7 +50,7 @@ class GUI:
                        command=enable_ip).grid(row=0, column=0)
         tk.Radiobutton(popup, text='Server', variable=is_server, value=1,
                        command=disable_ip).grid(row=0, column=1)
-        tk.Label(popup, text='Name:').grid(row=1, column=0)
+        tk.Label(popup, text='Name (no spaces):').grid(row=1, column=0)
         tk.Entry(popup, textvariable=username).grid(row=1, column=1)
         tk.Label(popup, text='Server IP:').grid(row=2, column=0)
         ip_entry = tk.Entry(popup, textvariable=ip)
