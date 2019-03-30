@@ -1,5 +1,6 @@
 from os import listdir
 from os.path import dirname
+from queue import Queue
 from Server import Server
 import sys
 import tkinter as tk
@@ -9,7 +10,7 @@ from time import sleep
 class GUI:
     def __init__(self, client):
         self.client = client
-        self.msg = None
+        self.queue = Queue()
         self.selected = []
         self.current_trick = [None] * 4
         self.last_trick = [None] * 4
@@ -23,6 +24,9 @@ class GUI:
             self.image_dir = dirname(__file__) + '/images/'
         self.setup_gui()
         self.set_mode('wait')
+
+    def add_to_queue(self, msg):
+        self.queue.put(msg)
 
     def connect_popup(self):
         def enable_ip():
@@ -40,6 +44,7 @@ class GUI:
                 else:
                     self.client.connect(name, ip.get())
                 Thread(target=self.client.loop, args=(self,)).start()
+                Thread(target=self.client.chat_loop, args=(self,)).start()
                 popup.destroy()
         popup = tk.Toplevel(self.window)
         popup.title('Connect')
@@ -137,6 +142,10 @@ class GUI:
             self.set_mode('wait')
             self.client.send(self.hand[card_num])
 
+    def on_chat_enter(self, event):
+        self.client.send_chat(self.chat_input.get())
+        self.chat_input.delete(0, 'end')
+
     def on_last_trick_click(self, event):
         self.last_trick_popup()
 
@@ -147,9 +156,10 @@ class GUI:
             self.selected = []
 
     def poll_loop(self, delay_ms=50):
-        if self.msg:
-            msg_type = self.msg[:2]
-            msg_data = self.msg[2:].split()
+        if not self.queue.empty():
+            msg = self.queue.get()
+            msg_type = msg[:2]
+            msg_data = msg[2:].split()
             if msg_type.startswith('h:'):
                 self.set_hand(msg_data)
             elif msg_type.startswith('p:'):
@@ -162,13 +172,14 @@ class GUI:
                 self.end_trick(msg_data[0])
             elif msg_type.startswith('u:'):
                 self.set_usernames(msg_data)
+            elif msg_type.startswith('z:'):
+                self.show_chat(msg_data[0], ' '.join(msg_data[1:]))
             elif msg_type.startswith('p?'):
                 self.set_mode('pass')
             elif msg_type.startswith('c?'):
                 self.set_mode('play')
             elif msg_type.startswith('a?'):
                 self.moonshot_popup()
-            self.msg = None
         self.window.after(delay_ms, self.poll_loop)
     
     def set_hand(self, cards):
@@ -184,7 +195,8 @@ class GUI:
         self.mode = new_mode
         if new_mode == 'wait':
             for b in self.card_buttons:
-                # self.disable_button(b)
+                # Ideally, disable all buttons, but the button just clicked
+                # refuses to disable if we do.
                 self.unhighlight_button(b)
             self.submit_button.configure(highlightbackground=self.bg_color)
             self.window.after(delay_ms, self.disable_button,
@@ -203,9 +215,6 @@ class GUI:
             self.window.after(delay_ms, self.disable_button,
                               self.submit_button)
 
-    def set_msg(self, msg):
-        self.msg = msg
-
     def set_scores(self, score_data):
         for i in range(0, 8, 2):
             player_num = self.usernames.index(score_data[i])
@@ -217,6 +226,20 @@ class GUI:
         self.usernames = usernames
         for i in range(len(self.usernames)):
             self.username_labels[i].configure(text=self.usernames[i])
+
+    def setup_chat_window(self):
+        self.chat_window = tk.Toplevel(self.window)
+        self.chat_window.title('Chat')
+        self.chat_window.protocol('WM_DELETE_WINDOW', lambda: None)
+        self.chat_display = tk.Text(self.chat_window, state='disabled',
+                                    font=('Courier', 12), width=40,
+                                    borderwidth=0)
+        self.chat_display.pack(fill='x')
+        self.chat_input = tk.Entry(self.chat_window, font=('Courier', 12),
+                                   width=40)
+        self.chat_input.pack(fill='x')
+        self.chat_input.bind('<Return>', self.on_chat_enter)
+        self.chat_window.resizable(False, False)
 
     def setup_gui(self):
         self.window = tk.Tk()
@@ -281,15 +304,23 @@ class GUI:
         self.last_trick_button = tk.Button(self.window, text='Show Last\nTrick')
         self.last_trick_button.grid(row=0, column=13)
         self.last_trick_button.bind('<ButtonRelease>', self.on_last_trick_click)
+        self.setup_chat_window()
         self.window.configure(bg=self.bg_color)
+        self.window.resizable(False, False)
 
     def show_card(self, username, card):
         player_num = self.usernames.index(username)
-        # Save trick in order to show last trick
+        # Save trick in order to show last trick later
         self.current_trick[player_num] = card
         self.card_labels[player_num].configure(image=self.images[card])
         for l in self.username_labels:
             self.unhighlight_label(l)
+
+    def show_chat(self, username, text):
+        self.chat_display.config(state='normal')
+        self.chat_display.insert('end', username + ': ' + text + '\n')
+        self.chat_display.config(state='disabled')
+
 
     def start(self):
         self.connect_popup()

@@ -1,6 +1,5 @@
 simultaneous passing
 live login info
 round scores
-chat
 logging
 quit
