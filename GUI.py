@@ -33,7 +33,7 @@ class GUI:
             ip_entry.configure(state='normal')
         def disable_ip():
             ip_entry.configure(state='disabled')
-        def submit(event):
+        def connect(event):
             name = username.get()
             if name and (' ' not in name) and (is_server.get() or ip.get()):
                 self.window.title('Hearts - ' + name)
@@ -62,9 +62,9 @@ class GUI:
         tk.Label(popup, text='Server IP:').grid(row=2, column=0)
         ip_entry = tk.Entry(popup, textvariable=ip)
         ip_entry.grid(row=2, column=1)
-        button = tk.Button(popup, text='Submit')
+        button = tk.Button(popup, text='Connect')
         button.grid(row=3, column=1)
-        button.bind('<ButtonRelease>', submit)
+        button.bind('<ButtonRelease>', connect)
 
     def disable_button(self, button):
         button.configure(state='disabled')
@@ -93,7 +93,9 @@ class GUI:
         element.after(delay_ms, unhighlight_fn, element)
 
     def highlight_button(self, button):
+        # First one only works on Mac, second one only works on Windows
         button.configure(highlightbackground=self.hl_color)
+        button.configure(background=self.hl_color)
 
     def highlight_label(self, button):
         button.configure(background=self.hl_color)
@@ -140,14 +142,16 @@ class GUI:
                     self.submit_button.configure(state='normal')
         elif self.mode == 'play' and not self.lockout:
             self.set_mode('wait')
-            self.client.send(self.hand[card_num])
+            if card_num < len(self.hand):
+                self.client.send(self.hand[card_num])
 
     def on_chat_enter(self, event):
         self.client.send_chat(self.chat_input.get())
         self.chat_input.delete(0, 'end')
 
     def on_last_trick_click(self, event):
-        self.last_trick_popup()
+        if self.last_trick[0] is not None:
+            self.last_trick_popup()
 
     def on_submit_click(self, event):
         if self.mode == 'pass' and len(self.selected) == 3:
@@ -198,14 +202,16 @@ class GUI:
                 # Ideally, disable all buttons, but the button just clicked
                 # refuses to disable if we do.
                 self.unhighlight_button(b)
-            self.submit_button.configure(highlightbackground=self.bg_color)
+            self.submit_button.configure(highlightbackground=self.bg_color,
+                                         background=self.fg_color)
             self.window.after(delay_ms, self.disable_button,
                               self.submit_button)
         elif new_mode == 'pass':
             for b in self.card_buttons:
                 self.enable_button(b)
                 self.unhighlight_button(b)
-            self.submit_button.configure(highlightbackground=self.hl_color)
+            self.submit_button.configure(highlightbackground=self.hl_color,
+                                         background=self.hl_color)
             self.window.after(delay_ms, self.disable_button,
                               self.submit_button)
         elif new_mode == 'play':
@@ -321,7 +327,6 @@ class GUI:
         self.chat_display.insert('end', username + ': ' + text + '\n')
         self.chat_display.config(state='disabled')
 
-
     def start(self):
         self.connect_popup()
         self.poll_loop()
@@ -329,6 +334,7 @@ class GUI:
 
     def unhighlight_button(self, button):
         button.configure(highlightbackground=self.bg_color)
+        button.configure(background=self.bg_color)
 
     def unhighlight_label(self, label):
         label.configure(background=self.bg_color)
