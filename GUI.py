@@ -141,9 +141,9 @@ class GUI:
                 if len(self.selected) == 3:
                     self.submit_button.configure(state='normal')
         elif self.mode == 'play' and not self.lockout:
-            self.set_mode('wait')
             if card_num < len(self.hand):
                 self.client.send(self.hand[card_num])
+                self.set_mode('wait')
 
     def on_chat_enter(self, event):
         self.client.send_chat(self.chat_input.get())

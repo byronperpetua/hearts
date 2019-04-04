@@ -18,18 +18,31 @@ class Server:
         self.chat_sock.bind(('', self.chat_port))
         self.chat_sock.listen()
 
+    def accept_conn(self, sock, return_val_holder):
+        # pass an empty list to return_val_holder
+        return_val_holder.append(sock.accept()[0])
+
     def start_game(self, num_players=4):
-        print('Awaiting players.')
         while len(self.conns) < num_players:
-            conn = self.sock.accept()[0]
-            chat_conn = self.chat_sock.accept()[0] # bad?
-            self.conns.append(conn)
-            self.chat_conns.append(chat_conn)
-            self.usernames.append(conn.recv(self.bufsize).decode('utf-8'))
+            conn_holder = []
+            chat_conn_holder = []
+            t1 = Thread(target=self.accept_conn, args=(self.sock, conn_holder))
+            t2 = Thread(target=self.accept_conn,
+                        args=(self.chat_sock, chat_conn_holder))
+            t1.start()
+            t2.start()
+            t1.join()
+            t2.join()
+            self.conns.append(conn_holder[0])
+            self.chat_conns.append(chat_conn_holder[0])
+            username = conn_holder[0].recv(self.bufsize).decode('utf-8')
+            print(username + ' has joined.')
+            self.usernames.append(username)
         for i in range(num_players):
             msg = 'u:' + ' '.join([self.usernames[(k+i) % 4] for k in range(4)])
             self.send(i, msg)
             Thread(target=self.chat_loop, args=(i,)).start()
+        print('Starting game.')
         game = Game(self)
         game.play()
 
@@ -47,8 +60,11 @@ class Server:
 
     def request(self, player_num, msg):
         self.send(player_num, msg)
-        return self.conns[player_num].recv(self.bufsize).decode('utf-8')
+        r = self.conns[player_num].recv(self.bufsize).decode('utf-8')
+        # print('<', player_num, r)
+        return r
 
     def send(self, player_num, msg, delay_sec=0.05):
         self.conns[player_num].sendall(msg.encode('utf-8'))
+        # print('>', player_num, msg)
         sleep(delay_sec)

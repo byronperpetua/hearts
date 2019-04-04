@@ -65,8 +65,9 @@ class Round:
     def play_trick(self):
         trick = Hand()
         suit_led = None
-        for i in range(self.num_players):
-            self.server.send(i, 'h:' + str(self.hands[i]))
+        if self.trick_num >= 2:
+            for i in range(self.num_players):
+                self.server.send(i, 'h:' + str(self.hands[i]))
         for k in range(self.num_players):
             i = (self.leader + k) % self.num_players
             while True:
