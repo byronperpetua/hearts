@@ -12,11 +12,15 @@ class Client:
 
     def chat_loop(self, gui):
         while True:
-            msg = self.receive_chat()
-            if not msg:
+            msg_raw = self.receive_chat()
+            if not msg_raw:
+                print('Disconnected.')
                 break
             else:
-                gui.add_to_queue(msg)
+                # Handle multiple packets coming at once
+                msgs = [m for m in msg_raw.split('\x03') if m]
+                for m in msgs:
+                    gui.add_to_queue(m)
 
     def connect(self, username, host_ip):
         self.sock.connect((host_ip, self.port))
@@ -26,12 +30,15 @@ class Client:
 
     def loop(self, gui):
         while True:
-            msg = self.receive()
-            if not msg:
+            msg_raw = self.receive()
+            if not msg_raw:
                 print('Disconnected.')
                 break
             else:
-                gui.add_to_queue(msg)
+                # Handle multiple packets coming at once
+                msgs = [m for m in msg_raw.split('\x03') if m]
+                for m in msgs:
+                    gui.add_to_queue(m)
 
     def receive(self):
         return self.sock.recv(self.bufsize).decode('utf-8')

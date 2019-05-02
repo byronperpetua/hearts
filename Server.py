@@ -53,7 +53,8 @@ class Server:
     def chat_loop(self, player_num, delay_sec=0.05):
         while True:
             msg = self.chat_conns[player_num].recv(self.bufsize).decode('utf-8')
-            broadcast_msg = 'z:' + self.usernames[player_num] + ' ' + msg
+            broadcast_msg = ('z:' + self.usernames[player_num] + ' ' + msg
+                             + '\x03')
             for i in range(len(self.chat_conns)):
                 self.chat_conns[i].sendall(broadcast_msg.encode('utf-8'))
                 sleep(delay_sec)
@@ -68,7 +69,8 @@ class Server:
 
     def send(self, player_num, msg, delay_sec=0.05):
         self.send_to_conn(self.conns[player_num], msg)
+        # Delay may be unnecessary with the '\x03' message separator
         sleep(delay_sec)
 
     def send_to_conn(self, conn, msg):
-        conn.sendall(msg.encode('utf-8'))
+        conn.sendall((msg + '\x03').encode('utf-8'))
