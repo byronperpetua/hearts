@@ -3,3 +3,4 @@ live login info
 round scores
 logging
 quit
+network dropouts

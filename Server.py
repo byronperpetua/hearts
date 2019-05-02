@@ -58,13 +58,17 @@ class Server:
                 self.chat_conns[i].sendall(broadcast_msg.encode('utf-8'))
                 sleep(delay_sec)
 
-    def request(self, player_num, msg):
-        self.send(player_num, msg)
-        r = self.conns[player_num].recv(self.bufsize).decode('utf-8')
-        # print('<', player_num, r)
+    def recv_from_conn(self, conn):
+        r = conn.recv(self.bufsize).decode('utf-8')
         return r
 
+    def request(self, player_num, msg):
+        self.send(player_num, msg)
+        return self.recv_from_conn(self.conns[player_num])
+
     def send(self, player_num, msg, delay_sec=0.05):
-        self.conns[player_num].sendall(msg.encode('utf-8'))
-        # print('>', player_num, msg)
+        self.send_to_conn(self.conns[player_num], msg)
         sleep(delay_sec)
+
+    def send_to_conn(self, conn, msg):
+        conn.sendall(msg.encode('utf-8'))
