@@ -39,7 +39,8 @@ class Server:
             print(username + ' has joined.')
             self.usernames.append(username)
         for i in range(num_players):
-            msg = 'u:' + ' '.join([self.usernames[(k+i) % 4] for k in range(4)])
+            msg = 'u:' + ' '.join([self.usernames[(k+i) % 4]
+                                   for k in range(4)])
             self.send(i, msg)
             Thread(target=self.chat_loop, args=(i,)).start()
         print('Starting game.')

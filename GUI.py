@@ -104,10 +104,14 @@ class GUI:
         popup = tk.Toplevel(self.window)
         popup.attributes('-topmost', True)
         popup.title('Last trick')
-        tk.Label(popup, image=self.images[self.last_trick[0]]).grid(row=2, column=1)
-        tk.Label(popup, image=self.images[self.last_trick[1]]).grid(row=1, column=0)
-        tk.Label(popup, image=self.images[self.last_trick[2]]).grid(row=0, column=1)
-        tk.Label(popup, image=self.images[self.last_trick[3]]).grid(row=1, column=2)
+        tk.Label(popup, image=self.images[self.last_trick[0]]).grid(row=2,
+                                                                    column=1)
+        tk.Label(popup, image=self.images[self.last_trick[1]]).grid(row=1,
+                                                                    column=0)
+        tk.Label(popup, image=self.images[self.last_trick[2]]).grid(row=0,
+                                                                    column=1)
+        tk.Label(popup, image=self.images[self.last_trick[3]]).grid(row=1,
+                                                                    column=2)
 
     def moonshot_popup(self):
         popup = tk.Toplevel(self.window)
@@ -238,10 +242,11 @@ class GUI:
         self.chat_window.title('Chat')
         self.chat_window.protocol('WM_DELETE_WINDOW', lambda: None)
         self.chat_display = tk.Text(self.chat_window, state='disabled',
-                                    font=('Courier', 12), width=40,
+                                    font=('Arial', 12), width=40,
                                     borderwidth=0)
         self.chat_display.pack(fill='x')
-        self.chat_input = tk.Entry(self.chat_window, font=('Courier', 12),
+        self.chat_display.tag_config('bold', font=('Arial', 12, 'bold'))
+        self.chat_input = tk.Entry(self.chat_window, font=('Arial', 12),
                                    width=40)
         self.chat_input.pack(fill='x')
         self.chat_input.bind('<Return>', self.on_chat_enter)
@@ -305,11 +310,13 @@ class GUI:
             self.card_buttons[i].bind('<ButtonRelease>', self.on_card_click)
         self.submit_button = tk.Button(self.window, text='Submit\nPass',
                                        state='disabled', highlightthickness=5)
-        self.submit_button.grid(row=9, column=13)
+        self.submit_button.grid(row=8, column=12)
         self.submit_button.bind('<ButtonRelease>', self.on_submit_click)
-        self.last_trick_button = tk.Button(self.window, text='Show Last\nTrick')
-        self.last_trick_button.grid(row=0, column=13)
-        self.last_trick_button.bind('<ButtonRelease>', self.on_last_trick_click)
+        self.last_trick_button = tk.Button(self.window,
+                                           text='Show Last\nTrick')
+        self.last_trick_button.grid(row=0, column=12)
+        self.last_trick_button.bind('<ButtonRelease>',
+                                    self.on_last_trick_click)
         self.setup_chat_window()
         self.window.configure(bg=self.bg_color)
         self.window.resizable(False, False)
@@ -324,7 +331,8 @@ class GUI:
 
     def show_chat(self, username, text):
         self.chat_display.config(state='normal')
-        self.chat_display.insert('end', username + ': ' + text + '\n')
+        self.chat_display.insert('end', username + ': ', 'bold')
+        self.chat_display.insert('end', text + '\n')
         self.chat_display.config(state='disabled')
 
     def start(self):
