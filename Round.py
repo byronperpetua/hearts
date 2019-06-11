@@ -28,9 +28,9 @@ class Round:
     def distribute_pass(self):
         for i in range(self.num_players):
             if self.pass_dir == 'left':
-                received = self.passes[(i+1) % self.num_players]
-            elif self.pass_dir == 'right':
                 received = self.passes[(i-1) % self.num_players]
+            elif self.pass_dir == 'right':
+                received = self.passes[(i+1) % self.num_players]
             elif self.pass_dir == 'across':
                 received = self.passes[(i+2) % self.num_players]
             self.hands[i].extend(received)
