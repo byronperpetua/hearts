@@ -1,5 +1,3 @@
-*chat auto scroll
-*pass direction is wrong?
 simultaneous passing
 autoclaim
 live login info

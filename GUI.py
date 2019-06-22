@@ -333,6 +333,7 @@ class GUI:
         self.chat_display.config(state='normal')
         self.chat_display.insert('end', username + ': ', 'bold')
         self.chat_display.insert('end', text + '\n')
+        self.chat_display.see('end')
         self.chat_display.config(state='disabled')
 
     def start(self):
