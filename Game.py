@@ -19,10 +19,19 @@ class Game:
 
     def play(self):
         while max(self.scores) < self.max_score:
-            rnd = Round(self.server, self.pass_dirs[self.pass_dir_num])
-            rnd.play()
+            self.curr_round = Round(self.server,
+                                    self.pass_dirs[self.pass_dir_num])
+            self.curr_round.play()
             for i in range(self.num_players):
-                self.scores[i] += rnd.scores[i]
+                self.scores[i] += self.curr_round.scores[i]
             self.server.broadcast(self.get_scores_str())
             self.round_num += 1
             self.pass_dir_num = (self.pass_dir_num + 1) % len(self.pass_dirs)
+
+    def set_pass_dir(self, dir):
+        self.pass_dir_num = self.pass_dirs.index(dir)
+        self.curr_round.pass_dir = dir
+
+    def set_score(self, player_num, score):
+        self.scores[player_num] = score
+        self.server.broadcast(self.get_scores_str())

@@ -263,7 +263,7 @@ class GUI:
         self.card_labels = [None]*4
         self.card_buttons = []
         self.username_labels[0] = tk.Label(
-            self.window, text='bottom',bg=self.bg_color, fg=self.fg_color)
+            self.window, text='',bg=self.bg_color, fg=self.fg_color)
         self.username_labels[0].grid(row=7, column=6)
         self.score_labels[0] = tk.Label(
             self.window, text='0', bg=self.bg_color, fg=self.fg_color)
@@ -273,7 +273,7 @@ class GUI:
             fg=self.fg_color)
         self.card_labels[0].grid(row=6, column=6)
         self.username_labels[1] = tk.Label(
-            self.window, text='left', bg=self.bg_color, fg=self.fg_color)
+            self.window, text='', bg=self.bg_color, fg=self.fg_color)
         self.username_labels[1].grid(row=3, column=3)
         self.score_labels[1] = tk.Label(
             self.window, text='0', bg=self.bg_color, fg=self.fg_color)
@@ -283,7 +283,7 @@ class GUI:
             fg=self.fg_color)
         self.card_labels[1].grid(row=3, column=4, rowspan=2)
         self.username_labels[2] = tk.Label(
-            self.window, text='top', bg=self.bg_color, fg=self.fg_color)
+            self.window, text='', bg=self.bg_color, fg=self.fg_color)
         self.username_labels[2].grid(row=0, column=6)
         self.score_labels[2] = tk.Label(
             self.window, text='0', bg=self.bg_color, fg=self.fg_color)
@@ -293,7 +293,7 @@ class GUI:
             fg=self.fg_color)
         self.card_labels[2].grid(row=2, column=6)
         self.username_labels[3] = tk.Label(
-            self.window, text='right', bg=self.bg_color, fg=self.fg_color)
+            self.window, text='', bg=self.bg_color, fg=self.fg_color)
         self.username_labels[3].grid(row=3, column=9)
         self.score_labels[3] = tk.Label(
             self.window, text='0', bg=self.bg_color, fg=self.fg_color)

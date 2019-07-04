@@ -1,5 +1,6 @@
 from Game import Game
 from socket import socket
+from sys import stdin, stdout
 from time import sleep
 from threading import Thread
 
@@ -43,9 +44,10 @@ class Server:
                                    for k in range(4)])
             self.send(i, msg)
             Thread(target=self.chat_loop, args=(i,)).start()
+        Thread(target=self.terminal_loop).start()
         print('Starting game.')
-        game = Game(self)
-        game.play()
+        self.game = Game(self)
+        self.game.play()
 
     def broadcast(self, msg):
         for i in range(len(self.conns)):
@@ -62,6 +64,7 @@ class Server:
 
     def recv_from_conn(self, conn):
         r = conn.recv(self.bufsize).decode('utf-8')
+        # print('<-*', r)
         return r
 
     def request(self, player_num, msg):
@@ -70,8 +73,26 @@ class Server:
 
     def send(self, player_num, msg, delay_sec=0.05):
         self.send_to_conn(self.conns[player_num], msg)
+        # print(msg, '*->', player_num)
         # Delay may be unnecessary with the '\x03' message separator
         sleep(delay_sec)
 
     def send_to_conn(self, conn, msg):
         conn.sendall((msg + '\x03').encode('utf-8'))
+
+    def terminal_loop(self):
+        while True:
+            cmd = stdin.readline().split()
+            try:
+                if cmd[0] == 'set':
+                    if cmd[1] == 'score':
+                        player_num = self.usernames.index(cmd[2])
+                        self.game.set_score(player_num, int(cmd[3]))
+                    elif cmd[1] == 'pass':
+                        self.game.set_pass_dir(cmd[2])
+                    else:
+                        print('Invalid command.')
+                else:
+                    print('Invalid command.')
+            except (ValueError, IndexError):
+                print('Invalid command.')

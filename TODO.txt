@@ -1,7 +1,13 @@
+restart at any score and pass direction
+show pass direction
+show current turn more obviously
 simultaneous passing
 autoclaim
 live login info
 round scores
+chat word wrap
 logging
+logging messages for debugging
 quit
 network dropouts
+your turn notification

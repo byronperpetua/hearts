@@ -1,5 +1,6 @@
 from Hand import Hand
 from Card import Card
+from copy import deepcopy
 
 class Round:
     def __init__(self, server, pass_dir, num_tricks=13):
@@ -16,14 +17,21 @@ class Round:
         deck = Hand(full_deck=True)
         deck.shuffle()
         self.hands = deck.deal(self.num_players)
-
-    def get_pass(self):
         for i in range(self.num_players):
             self.server.send(i, 'h:' + str(self.hands[i]))
+
+    def get_pass(self):
+        self.original_hands = deepcopy(self.hands)
         for i in range(self.num_players):
             h = Hand(self.server.request(i, 'p?'))
             self.passes.append(h)
             self.hands[i].remove_hand(self.passes[i])
+            # Abort if pass direction has been manually set to 'hold'
+            if self.pass_dir == 'hold':
+                self.hands = self.original_hands
+                for i in range(self.num_players):
+                    self.server.send(i, 'h:' + str(self.hands[i]))
+                return
 
     def distribute_pass(self):
         for i in range(self.num_players):
@@ -95,6 +103,8 @@ class Round:
         self.deal()
         if self.pass_dir != 'hold':
             self.get_pass()
+        # Check pass direction again in case it was manually set
+        if self.pass_dir != 'hold':
             self.distribute_pass()
         self.leader = [h.contains(Card('2c')) for h in self.hands].index(True)
         self.trick_num = 1
