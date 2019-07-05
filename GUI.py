@@ -243,14 +243,15 @@ class GUI:
         self.chat_window.protocol('WM_DELETE_WINDOW', lambda: None)
         self.chat_display = tk.Text(self.chat_window, state='disabled',
                                     font=('Arial', 12), width=40,
-                                    borderwidth=0)
-        self.chat_display.pack(fill='x')
+                                    borderwidth=0, wrap=tk.WORD)
+        self.chat_display.grid(row=0, column=0, sticky='nsew')
         self.chat_display.tag_config('bold', font=('Arial', 12, 'bold'))
         self.chat_input = tk.Entry(self.chat_window, font=('Arial', 12),
                                    width=40)
-        self.chat_input.pack(fill='x')
+        self.chat_input.grid(row=1, column=0, sticky='nsew')
         self.chat_input.bind('<Return>', self.on_chat_enter)
-        self.chat_window.resizable(False, False)
+        self.chat_window.columnconfigure(0, weight=1)
+        self.chat_window.rowconfigure(0, weight=1)
 
     def setup_gui(self):
         self.window = tk.Tk()
