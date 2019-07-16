@@ -1,11 +1,11 @@
 FEATURE                                         PRIORITY    DIFFICULTY
 ----------------------------------------------------------------------
 round scores                                    H           L
-clock counting up                               M           L
 logging                                         H           M
 don't spawn multiple last trick windows         L           L
 handle wide usernames                           L           L
 hide card image after playing                   L           L
+clock counting up                               M           M
 autoclaim                                       M           M
 quit                                            L           M
 simultaneous passing or rotate first passer     M           H
