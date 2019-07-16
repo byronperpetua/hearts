@@ -101,6 +101,7 @@ class Round:
 
     def play(self):
         self.deal()
+        self.server.broadcast('i:Pass: ' + self.pass_dir)
         if self.pass_dir != 'hold':
             self.get_pass()
         # Check pass direction again in case it was manually set

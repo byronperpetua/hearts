@@ -182,6 +182,8 @@ class GUI:
                 self.set_usernames(msg_data)
             elif msg_type.startswith('z:'):
                 self.show_chat(msg_data[0], ' '.join(msg_data[1:]))
+            elif msg_type.startswith('i:'):
+                self.status_bar.configure(text=' '.join(msg_data))
             elif msg_type.startswith('p?'):
                 self.set_mode('pass')
             elif msg_type.startswith('c?'):
@@ -214,14 +216,14 @@ class GUI:
             for b in self.card_buttons:
                 self.enable_button(b)
                 self.unhighlight_button(b)
-            self.submit_button.configure(highlightbackground=self.hl_color,
-                                         background=self.hl_color)
+            self.highlight_button(self.submit_button)
             self.window.after(delay_ms, self.disable_button,
                               self.submit_button)
         elif new_mode == 'play':
             for b in self.card_buttons:
                 self.enable_button(b)
                 self.unhighlight_button(b)
+            self.highlight_label(self.username_labels[0])
             self.window.after(delay_ms, self.disable_button,
                               self.submit_button)
 
@@ -318,6 +320,9 @@ class GUI:
         self.last_trick_button.grid(row=0, column=12)
         self.last_trick_button.bind('<ButtonRelease>',
                                     self.on_last_trick_click)
+        self.status_bar = tk.Label(self.window, text='', bg=self.bg_color,
+                                   fg=self.fg_color)
+        self.status_bar.grid(row=0, column=0, columnspan=6, sticky='w', padx=5)
         self.setup_chat_window()
         self.window.configure(bg=self.bg_color)
         self.window.resizable(False, False)
