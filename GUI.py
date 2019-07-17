@@ -228,9 +228,15 @@ class GUI:
                               self.submit_button)
 
     def set_scores(self, score_data):
+        score_strs = [None]*4
         for i in range(0, 8, 2):
             player_num = self.usernames.index(score_data[i])
-            self.score_labels[player_num].configure(text=score_data[i+1])
+            score_strs[player_num] = score_data[i+1]
+            self.score_labels[player_num].configure(
+                text=score_strs[player_num])
+        full_score_str = '  '.join([s + ' '*(3-len(s)) for s in score_strs])
+        self.round_scores.configure(text=self.round_scores['text'] + '\n'
+                                    + full_score_str)
         for l in self.username_labels:
             self.unhighlight_label(l)
 
@@ -238,6 +244,8 @@ class GUI:
         self.usernames = usernames
         for i in range(len(self.usernames)):
             self.username_labels[i].configure(text=self.usernames[i])
+        self.round_scores.configure(
+            text='  '.join([u[:3] + ' '*(3-len(u)) for u in self.usernames]))
 
     def setup_chat_window(self):
         self.chat_window = tk.Toplevel(self.window)
@@ -323,6 +331,10 @@ class GUI:
         self.status_bar = tk.Label(self.window, text='', bg=self.bg_color,
                                    fg=self.fg_color)
         self.status_bar.grid(row=0, column=0, columnspan=6, sticky='w', padx=5)
+        self.round_scores = tk.Label(self.window, text='', font='Courier',
+                                     bg=self.bg_color, fg=self.fg_color)
+        self.round_scores.grid(row=2, column=11, rowspan=6, columnspan=2,
+                               sticky='nw')
         self.setup_chat_window()
         self.window.configure(bg=self.bg_color)
         self.window.resizable(False, False)
