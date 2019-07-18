@@ -3,14 +3,15 @@ from Card import Card
 from copy import deepcopy
 
 class Round:
-    def __init__(self, server, pass_dir, num_tricks=13):
-        self.num_players = len(server.usernames)
+    def __init__(self, game, pass_dir, num_tricks=13):
+        self.game = game
+        self.server = game.server
+        self.num_players = len(self.server.usernames)
         self.num_tricks = num_tricks
         self.scores = [0] * self.num_players
         self.hands = []
         self.hearts_broken = False
         self.passes = []
-        self.server = server
         self.pass_dir = pass_dir
 
     def deal(self):
@@ -36,14 +37,22 @@ class Round:
     def distribute_pass(self):
         for i in range(self.num_players):
             if self.pass_dir == 'left':
-                received = self.passes[(i-1) % self.num_players]
+                from_num = (i-1) % self.num_players
             elif self.pass_dir == 'right':
-                received = self.passes[(i+1) % self.num_players]
+                from_num = (i+1) % self.num_players
             elif self.pass_dir == 'across':
-                received = self.passes[(i+2) % self.num_players]
+                from_num = (i+2) % self.num_players
+            received = self.passes[from_num]
             self.hands[i].extend(received)
             self.server.send(i, 'h:' + str(self.hands[i]))
             self.server.send(i, 'p:' + str(received))
+            for c in received.cards:
+                self.game.logger.log_pass(
+                    round_num=self.game.round_num,
+                    pass_dir=self.pass_dir,
+                    from_player=self.server.usernames[from_num],
+                    to_player=self.server.usernames[i],
+                    card=c)
     
     def validate_play(self, card, hand, suit_led):
         if hand.contains(card):
@@ -85,6 +94,12 @@ class Round:
                     trick.append(c)
                     self.server.broadcast('c:' + self.server.usernames[i]
                                           + ' ' + str(c))
+                    self.game.logger.log_play(
+                        round_num=self.game.round_num,
+                        trick_num=self.trick_num,
+                        card_num_in_trick=k+1,
+                        player=self.server.usernames[i],
+                        card=c)
                     break
             if suit_led is None:
                 suit_led = c.suit
@@ -126,3 +141,4 @@ class Round:
                 elif response == 's':
                     self.scores[shooter] = -26
                     break
+                    
