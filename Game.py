@@ -1,11 +1,13 @@
 from Logger import Logger
 from Round import Round
+from Timer import Timer
 
 class Game:
     def __init__(self, server, max_score=100,
                  pass_dirs=('left', 'right', 'across', 'hold')):
         self.server = server
         self.logger = Logger()
+        self.timer = Timer(server)
         self.num_players = len(server.usernames)
         self.scores = [0] * self.num_players
         self.max_score = max_score

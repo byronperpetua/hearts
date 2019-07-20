@@ -24,6 +24,7 @@ class Round:
     def get_pass(self):
         self.original_hands = deepcopy(self.hands)
         for i in range(self.num_players):
+            self.game.timer.set_player(i)
             h = Hand(self.server.request(i, 'p?'))
             self.passes.append(h)
             self.hands[i].remove_hand(self.passes[i])
@@ -87,6 +88,7 @@ class Round:
                 self.server.send(i, 'h:' + str(self.hands[i]))
         for k in range(self.num_players):
             i = (self.leader + k) % self.num_players
+            self.game.timer.set_player(i)
             while True:
                 c = Card(self.server.request(i, 'c?'))
                 if self.validate_play(c, self.hands[i], suit_led):
@@ -129,6 +131,7 @@ class Round:
             self.trick_num += 1
         if max(self.scores) == 26:
             shooter = self.scores.index(26)
+            self.game.timer.set_player(shooter)
             while True:
                 response = self.server.request(shooter, 'a?')
                 if response == 'a':

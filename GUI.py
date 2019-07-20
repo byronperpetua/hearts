@@ -180,6 +180,8 @@ class GUI:
                 self.end_trick(msg_data[0])
             elif msg_type.startswith('u:'):
                 self.set_usernames(msg_data)
+            elif msg_type.startswith('k:'):
+                self.show_time(msg_data[0], msg_data[1])
             elif msg_type.startswith('z:'):
                 self.show_chat(msg_data[0], ' '.join(msg_data[1:]))
             elif msg_type.startswith('i:'):
@@ -232,8 +234,6 @@ class GUI:
         for i in range(0, 8, 2):
             player_num = self.usernames.index(score_data[i])
             score_strs[player_num] = score_data[i+1]
-            self.score_labels[player_num].configure(
-                text=score_strs[player_num])
         full_score_str = '  '.join([s + ' '*(3-len(s)) for s in score_strs])
         self.round_scores.configure(text=self.round_scores['text'] + '\n'
                                     + full_score_str)
@@ -270,15 +270,15 @@ class GUI:
         for f in listdir(self.image_dir):
             self.images[f[:-4]] = tk.PhotoImage(file=self.image_dir+f)
         self.username_labels = [None]*4
-        self.score_labels = [None]*4
+        self.time_labels = [None]*4
         self.card_labels = [None]*4
         self.card_buttons = []
         self.username_labels[0] = tk.Label(
             self.window, text='', bg=self.bg_color, fg=self.fg_color)
         self.username_labels[0].grid(row=7, column=5, columnspan=3, sticky='s')
-        self.score_labels[0] = tk.Label(
-            self.window, text='0', bg=self.bg_color, fg=self.fg_color)
-        self.score_labels[0].grid(row=8, column=6, sticky='n')
+        self.time_labels[0] = tk.Label(
+            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color)
+        self.time_labels[0].grid(row=8, column=6, sticky='n')
         self.card_labels[0] = tk.Label(
             self.window, image=self.images['blank'], bg=self.bg_color,
             fg=self.fg_color)
@@ -286,9 +286,9 @@ class GUI:
         self.username_labels[1] = tk.Label(
             self.window, text='', bg=self.bg_color, fg=self.fg_color)
         self.username_labels[1].grid(row=3, column=2, columnspan=2, sticky='se')
-        self.score_labels[1] = tk.Label(
-            self.window, text='0', bg=self.bg_color, fg=self.fg_color)
-        self.score_labels[1].grid(row=4, column=3, sticky='ne')
+        self.time_labels[1] = tk.Label(
+            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color)
+        self.time_labels[1].grid(row=4, column=3, sticky='ne')
         self.card_labels[1] = tk.Label(
             self.window, image=self.images['blank'], bg=self.bg_color,
             fg=self.fg_color)
@@ -296,9 +296,9 @@ class GUI:
         self.username_labels[2] = tk.Label(
             self.window, text='', bg=self.bg_color, fg=self.fg_color)
         self.username_labels[2].grid(row=0, column=5, columnspan=3, sticky='s')
-        self.score_labels[2] = tk.Label(
-            self.window, text='0', bg=self.bg_color, fg=self.fg_color)
-        self.score_labels[2].grid(row=1, column=6, sticky='n')
+        self.time_labels[2] = tk.Label(
+            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color)
+        self.time_labels[2].grid(row=1, column=6, sticky='n')
         self.card_labels[2] = tk.Label(
             self.window, image=self.images['blank'], bg=self.bg_color,
             fg=self.fg_color)
@@ -306,9 +306,9 @@ class GUI:
         self.username_labels[3] = tk.Label(
             self.window, text='', bg=self.bg_color, fg=self.fg_color)
         self.username_labels[3].grid(row=3, column=9, columnspan=2, sticky='sw')
-        self.score_labels[3] = tk.Label(
-            self.window, text='0', bg=self.bg_color, fg=self.fg_color)
-        self.score_labels[3].grid(row=4, column=9, sticky='nw')
+        self.time_labels[3] = tk.Label(
+            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color)
+        self.time_labels[3].grid(row=4, column=9, sticky='nw')
         self.card_labels[3] = tk.Label(
             self.window, image=self.images['blank'], bg=self.bg_color,
             fg=self.fg_color)
@@ -353,6 +353,12 @@ class GUI:
         self.chat_display.insert('end', text + '\n')
         self.chat_display.see('end')
         self.chat_display.config(state='disabled')
+
+    def show_time(self, username, seconds_str):
+        seconds = int(seconds_str)
+        time_str = '{}:{:0>2d}'.format(seconds // 60, seconds % 60)
+        self.time_labels[self.usernames.index(username)].configure(
+            text=time_str)
 
     def start(self):
         self.connect_popup()
