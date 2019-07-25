@@ -229,7 +229,7 @@ class GUI:
             self.window.after(delay_ms, self.disable_button,
                               self.submit_button)
 
-    def set_scores(self, score_data):
+    def set_scores(self, score_data, delay_ms=2000):
         score_strs = [None]*4
         for i in range(0, 8, 2):
             player_num = self.usernames.index(score_data[i])
@@ -237,8 +237,7 @@ class GUI:
         full_score_str = '  '.join([s + ' '*(3-len(s)) for s in score_strs])
         self.round_scores.configure(text=self.round_scores['text'] + '\n'
                                     + full_score_str)
-        for l in self.username_labels:
-            self.unhighlight_label(l)
+        self.window.after(delay_ms, self.unhighlight_username_labels)
 
     def set_usernames(self, usernames):
         self.usernames = usernames
@@ -344,8 +343,7 @@ class GUI:
         # Save trick in order to show last trick later
         self.current_trick[player_num] = card
         self.card_labels[player_num].configure(image=self.images[card])
-        for l in self.username_labels:
-            self.unhighlight_label(l)
+        self.unhighlight_username_labels()
 
     def show_chat(self, username, text):
         self.chat_display.config(state='normal')
@@ -369,5 +367,6 @@ class GUI:
         button.configure(highlightbackground=self.bg_color)
         button.configure(background=self.bg_color)
 
-    def unhighlight_label(self, label):
-        label.configure(background=self.bg_color)
+    def unhighlight_username_labels(self):
+        for l in self.username_labels:
+            l.configure(background=self.bg_color)
