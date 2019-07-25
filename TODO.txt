@@ -2,6 +2,7 @@ FEATURE                                         PRIORITY    DIFFICULTY
 ----------------------------------------------------------------------
 don't spawn multiple last trick windows         L           L
 hide card image after playing                   L           L
+highlight label on pass turn                    L           L
 autoclaim                                       M           M
 quit                                            L           M
 fix emoji chat crash                            L           M

@@ -1,3 +1,4 @@
+from functools import partial
 from os import listdir
 from os.path import dirname
 from queue import Queue
@@ -58,13 +59,15 @@ class GUI:
         tk.Radiobutton(popup, text='Server', variable=is_server, value=1,
                        command=disable_ip).grid(row=0, column=1)
         tk.Label(popup, text='Name (no spaces):').grid(row=1, column=0)
-        tk.Entry(popup, textvariable=username).grid(row=1, column=1)
+        username_entry = tk.Entry(popup, textvariable=username)
+        username_entry.grid(row=1, column=1)
+        username_entry.bind('<Return>', connect)
         tk.Label(popup, text='Server IP:').grid(row=2, column=0)
         ip_entry = tk.Entry(popup, textvariable=ip)
         ip_entry.grid(row=2, column=1)
-        button = tk.Button(popup, text='Connect')
+        ip_entry.bind('<Return>', connect)
+        button = tk.Button(popup, text='Connect', command=lambda: connect(None))
         button.grid(row=3, column=1)
-        button.bind('<ButtonRelease>', connect)
 
     def disable_button(self, button):
         button.configure(state='disabled')
@@ -118,30 +121,26 @@ class GUI:
         popup.protocol('WM_DELETE_WINDOW', lambda: None)
         popup.attributes('-topmost', True)
         tk.Label(popup, text='Add or subtract?').grid(row=0)
-        def add(event):
+        def add():
             self.client.send('a')
             popup.destroy()
-        def sub(event):
+        def sub():
             self.client.send('s')
             popup.destroy()
-        add_button = tk.Button(popup, text='Add')
+        add_button = tk.Button(popup, text='Add', command=add)
         add_button.grid(row=1, column=0)
-        add_button.bind('<ButtonRelease>', add)
-        sub_button = tk.Button(popup, text='Subtract')
+        sub_button = tk.Button(popup, text='Subtract', command=sub)
         sub_button.grid(row=1, column=1)
-        sub_button.bind('<ButtonRelease>', sub)
 
-    def on_card_click(self, event):
-        button = event.widget
-        card_num = self.card_buttons.index(button)
+    def on_card_click(self, card_num):
         if self.mode == 'pass':
             if card_num in self.selected:
                 self.selected.remove(card_num)
-                self.unhighlight_button(event.widget)
+                self.unhighlight_button(self.card_buttons[card_num])
                 self.submit_button.configure(state='disabled')
             elif len(self.selected) < 3:
                 self.selected.append(card_num)
-                self.highlight_button(event.widget)
+                self.highlight_button(self.card_buttons[card_num])
                 if len(self.selected) == 3:
                     self.submit_button.configure(state='normal')
         elif self.mode == 'play' and not self.lockout:
@@ -153,11 +152,11 @@ class GUI:
         self.client.send_chat(self.chat_input.get())
         self.chat_input.delete(0, 'end')
 
-    def on_last_trick_click(self, event):
+    def on_last_trick_click(self):
         if self.last_trick[0] is not None:
             self.last_trick_popup()
 
-    def on_submit_click(self, event):
+    def on_submit_click(self):
         if self.mode == 'pass' and len(self.selected) == 3:
             self.set_mode('wait')
             self.client.send(' '.join([self.hand[i] for i in self.selected]))
@@ -315,18 +314,17 @@ class GUI:
         for i in range(13):
             self.card_buttons.append(tk.Button(
                 self.window, image=self.images['blank'],
+                command=partial(self.on_card_click, i),
                 highlightthickness=5, highlightbackground=self.bg_color))
             self.card_buttons[i].grid(row=9, column=i)
-            self.card_buttons[i].bind('<ButtonRelease>', self.on_card_click)
         self.submit_button = tk.Button(self.window, text='Submit\nPass',
+                                       command=self.on_submit_click,
                                        state='disabled', highlightthickness=5)
         self.submit_button.grid(row=8, column=12)
-        self.submit_button.bind('<ButtonRelease>', self.on_submit_click)
         self.last_trick_button = tk.Button(self.window,
+                                           command=self.on_last_trick_click,
                                            text='Show Last\nTrick')
         self.last_trick_button.grid(row=0, column=12)
-        self.last_trick_button.bind('<ButtonRelease>',
-                                    self.on_last_trick_click)
         self.status_bar = tk.Label(self.window, text='', bg=self.bg_color,
                                    fg=self.fg_color)
         self.status_bar.grid(row=0, column=0, columnspan=6, sticky='w', padx=5)
