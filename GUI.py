@@ -51,6 +51,8 @@ class GUI:
         popup.title('Connect')
         popup.protocol('WM_DELETE_WINDOW', lambda: None)
         popup.attributes('-topmost', True)
+        popup.resizable(False, False)
+        popup.grab_set()
         is_server = tk.IntVar()
         username = tk.StringVar()
         ip = tk.StringVar()
@@ -107,6 +109,8 @@ class GUI:
         popup = tk.Toplevel(self.window)
         popup.attributes('-topmost', True)
         popup.title('Last trick')
+        popup.resizable(False, False)
+        popup.grab_set()
         tk.Label(popup, image=self.images[self.last_trick[0]]).grid(row=2,
                                                                     column=1)
         tk.Label(popup, image=self.images[self.last_trick[1]]).grid(row=1,
@@ -115,11 +119,15 @@ class GUI:
                                                                     column=1)
         tk.Label(popup, image=self.images[self.last_trick[3]]).grid(row=1,
                                                                     column=2)
+        tk.Button(popup, text='Close', command=popup.destroy).grid(
+            row=1, column=1, sticky='nsew')
 
     def moonshot_popup(self):
         popup = tk.Toplevel(self.window)
         popup.protocol('WM_DELETE_WINDOW', lambda: None)
         popup.attributes('-topmost', True)
+        popup.resizable(False, False)
+        popup.grab_set()
         tk.Label(popup, text='Add or subtract?').grid(row=0)
         def add():
             self.client.send('a')
@@ -127,10 +135,8 @@ class GUI:
         def sub():
             self.client.send('s')
             popup.destroy()
-        add_button = tk.Button(popup, text='Add', command=add)
-        add_button.grid(row=1, column=0)
-        sub_button = tk.Button(popup, text='Subtract', command=sub)
-        sub_button.grid(row=1, column=1)
+        tk.Button(popup, text='Add', command=add).grid(row=1, column=0)
+        tk.Button(popup, text='Subtract', command=sub).grid(row=1, column=1)
 
     def on_card_click(self, card_num):
         if self.mode == 'pass':
@@ -264,6 +270,8 @@ class GUI:
     def setup_gui(self):
         self.window = tk.Tk()
         self.window.title('Hearts')
+        self.window.configure(bg=self.bg_color)
+        self.window.resizable(False, False)
         self.images = {}
         for f in listdir(self.image_dir):
             self.images[f[:-4]] = tk.PhotoImage(file=self.image_dir+f)
@@ -332,9 +340,9 @@ class GUI:
                                      bg=self.bg_color, fg=self.fg_color)
         self.round_scores.grid(row=2, column=11, rowspan=6, columnspan=2,
                                sticky='nw')
+
         self.setup_chat_window()
-        self.window.configure(bg=self.bg_color)
-        self.window.resizable(False, False)
+        self.connect_popup()
 
     def show_card(self, username, card):
         player_num = self.usernames.index(username)
@@ -357,7 +365,6 @@ class GUI:
             text=time_str)
 
     def start(self):
-        self.connect_popup()
         self.poll_loop()
         self.window.mainloop()
 
