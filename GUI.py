@@ -107,6 +107,10 @@ class GUI:
     def highlight_label(self, button):
         button.configure(background=self.hl_color)
 
+    def highlight_username_labels(self):
+        for l in self.username_labels:
+            self.highlight_label(l)
+
     def last_trick_popup(self):
         popup = tk.Toplevel(self.window)
         popup.attributes('-topmost', True)
@@ -169,36 +173,38 @@ class GUI:
             self.set_mode('wait')
             self.client.send(' '.join([self.hand[i] for i in self.selected]))
             self.selected = []
-            self.unhighlight_username_labels()
 
     def poll_loop(self, delay_ms=50):
         if not self.queue.empty():
             msg = self.queue.get()
             msg_type = msg[:2]
             msg_data = msg[2:].split()
-            if msg_type.startswith('h:'):
+            if msg_type.startswith('h:'): # hand to set 
                 self.set_hand(msg_data)
-            elif msg_type.startswith('p:'):
+            elif msg_type.startswith('p:'): # pass received
                 self.flash_cards(msg_data)
-            elif msg_type.startswith('c:'): 
+            elif msg_type.startswith('c:'): # card played
                 self.show_card(msg_data[0], msg_data[1])
-            elif msg_type.startswith('s:'):
+            elif msg_type.startswith('s:'): # scores
                 self.set_scores(msg_data)
-            elif msg_type.startswith('t:'):
+            elif msg_type.startswith('t:'): # trick winner
                 self.end_trick(msg_data[0])
-            elif msg_type.startswith('u:'):
+            elif msg_type.startswith('u:'): # usernames
                 self.set_usernames(msg_data)
-            elif msg_type.startswith('k:'):
+            elif msg_type.startswith('k:'): # player and time elapsed
                 self.show_time(msg_data[0], msg_data[1])
-            elif msg_type.startswith('z:'):
+            elif msg_type.startswith('z:'): # sender and chat message
                 self.show_chat(msg_data[0], ' '.join(msg_data[1:]))
-            elif msg_type.startswith('i:'):
+            elif msg_type.startswith('i:'): # info for status bar
                 self.status_bar.configure(text=' '.join(msg_data))
-            elif msg_type.startswith('p?'):
+            elif msg_type.startswith('g:'): # player has submitted pass
+                player_num = self.usernames.index(msg_data[0])
+                self.unhighlight_label(self.username_labels[player_num])
+            elif msg_type.startswith('p?'): # request pass
                 self.set_mode('pass')
-            elif msg_type.startswith('c?'):
+            elif msg_type.startswith('c?'): # request card to play
                 self.set_mode('play')
-            elif msg_type.startswith('a?'):
+            elif msg_type.startswith('a?'): # request add or subtract
                 self.moonshot_popup()
         self.window.after(delay_ms, self.poll_loop)
     
@@ -211,7 +217,8 @@ class GUI:
                 img = self.images['blank']
             self.card_buttons[i].configure(image=img)
 
-    def set_mode(self, new_mode, delay_ms=1):
+    def set_mode(self, new_mode, short_delay_ms=1,
+                 pass_highlight_delay_ms=1000):
         self.mode = new_mode
         if new_mode == 'wait':
             for b in self.card_buttons:
@@ -220,21 +227,22 @@ class GUI:
                 self.unhighlight_button(b)
             self.submit_button.configure(highlightbackground=self.bg_color,
                                          background=self.fg_color)
-            self.window.after(delay_ms, self.disable_button,
+            self.window.after(short_delay_ms, self.disable_button,
                               self.submit_button)
         elif new_mode == 'pass':
             for b in self.card_buttons:
                 self.enable_button(b)
                 self.unhighlight_button(b)
             self.highlight_button(self.submit_button)
-            self.highlight_label(self.username_labels[0])
-            self.window.after(delay_ms, self.disable_button,
+            self.window.after(pass_highlight_delay_ms,
+                              self.highlight_username_labels)
+            self.window.after(short_delay_ms, self.disable_button,
                               self.submit_button)
         elif new_mode == 'play':
             for b in self.card_buttons:
                 self.enable_button(b)
             self.highlight_label(self.username_labels[0])
-            self.window.after(delay_ms, self.disable_button,
+            self.window.after(short_delay_ms, self.disable_button,
                               self.submit_button)
 
     def set_scores(self, score_data, delay_ms=2000):
@@ -245,8 +253,7 @@ class GUI:
         full_score_str = '  '.join([s + ' '*(3-len(s)) for s in score_strs])
         self.round_scores.configure(text=self.round_scores['text'] + '\n'
                                     + full_score_str)
-        # causes first passing player to have label unhighlighted
-        self.window.after(delay_ms, self.unhighlight_username_labels) 
+        self.window.after(delay_ms, self.unhighlight_last_trick_winner)           
 
     def set_usernames(self, usernames):
         self.usernames = usernames
@@ -344,7 +351,6 @@ class GUI:
                                      bg=self.bg_color, fg=self.fg_color)
         self.round_scores.grid(row=2, column=11, rowspan=6, columnspan=2,
                                sticky='nw')
-
         self.setup_chat_window()
         self.connect_popup()
 
@@ -372,6 +378,19 @@ class GUI:
         button.configure(highlightbackground=self.bg_color)
         button.configure(background=self.bg_color)
 
-    def unhighlight_username_labels(self):
+    def unhighlight_label(self, label):
+        label.configure(background=self.bg_color)
+
+    def unhighlight_username_labels(self, exclude_self_on_turn=False):
         for l in self.username_labels:
-            l.configure(background=self.bg_color)
+            self.unhighlight_label(l)
+
+    # Unhighlight last trick winner while preserving highlighting for next hand
+    def unhighlight_last_trick_winner(self):
+        if self.mode == 'play':
+            for i in range(1, 4):
+                self.unhighlight_label(self.username_labels[i])
+        elif self.mode == 'wait':
+            for i in range(0, 4):
+                self.unhighlight_label(self.username_labels[i])
+        # if mode is 'pass', labels are appropriately highlighted; do nothing

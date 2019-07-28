@@ -1,10 +1,8 @@
 FEATURE                                         PRIORITY    DIFFICULTY
 ----------------------------------------------------------------------
-fix first passer label unhighlight              L           L
 autoclaim                                       M           M
 quit                                            L           M
 hide card image after playing                   L           M
 fix emoji chat crash                            L           M
-simultaneous passing or rotate first passer     M           H
 network dropouts                                M           H
 live login info                                 L           H

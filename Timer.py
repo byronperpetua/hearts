@@ -10,6 +10,10 @@ class Timer:
         self.last_checkpoint = None
         self.tick_timer = None
 
+    def stop(self):
+        self.update_time()
+        self.player_num = None
+
     # Wait time is not exact, just short enough that it appears smooth
     def reset_tick_timer(self, wait_time=0.1):
         if self.tick_timer is not None:
@@ -23,10 +27,11 @@ class Timer:
         self.reset_tick_timer()
 
     def tick(self):
-        self.update_time()
-        self.server.broadcast('k:' + self.server.usernames[self.player_num]
-                              + ' ' + str(int(self.times[self.player_num])))
-        self.reset_tick_timer()
+        if self.player_num is not None:
+            self.update_time()
+            self.server.broadcast('k:' + self.server.usernames[self.player_num]
+                                  + ' ' + str(int(self.times[self.player_num])))
+            self.reset_tick_timer()
 
     def update_time(self):
         new_checkpoint = time()

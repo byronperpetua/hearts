@@ -1,6 +1,7 @@
-from Hand import Hand
 from Card import Card
 from copy import deepcopy
+from Hand import Hand
+from threading import Thread
 
 class Round:
     def __init__(self, game, pass_dir, num_tricks=13):
@@ -23,9 +24,21 @@ class Round:
 
     def get_pass(self):
         self.original_hands = deepcopy(self.hands)
+        self.game.timer.stop()
+        pass_msg_holders = [[] for i in range(self.num_players)]
+        pass_threads = []
         for i in range(self.num_players):
-            self.game.timer.set_player(i)
-            h = Hand(self.server.request(i, 'p?'))
+            pass_threads.append(Thread(target=self.server.request_and_store,
+                                       args=(i, 'p?', pass_msg_holders[i])))
+            pass_threads[i].start()
+        players_left = list(range(self.num_players))
+        while players_left:
+            for i in players_left:
+                if not pass_threads[i].is_alive():
+                    players_left.remove(i)
+                    self.server.broadcast('g:' + self.server.usernames[i])
+        for i in range(self.num_players):
+            h = Hand(pass_msg_holders[i][0])
             self.passes.append(h)
             self.hands[i].remove_hand(self.passes[i])
             # Abort if pass direction has been manually set to 'hold'

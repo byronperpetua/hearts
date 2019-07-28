@@ -65,6 +65,10 @@ class Server:
         self.send(player_num, msg)
         return self.recv_from_conn(self.conns[player_num])
 
+    # Pass an empty list to result_holder
+    def request_and_store(self, player_num, msg, result_holder):
+        result_holder.append(self.request(player_num, msg))
+
     def send(self, player_num, msg, delay_sec=0.05):
         self.send_to_conn(self.conns[player_num], msg)
         # Delay may be unnecessary with the '\x03' message separator
