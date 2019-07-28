@@ -1,5 +1,5 @@
 from Game import Game
-from socket import socket
+import socket
 from sys import stdin, stdout
 from time import sleep
 from threading import Thread
@@ -12,12 +12,7 @@ class Server:
         self.conns = []
         self.chat_conns = []
         self.usernames = []
-        self.sock = socket()
-        self.sock.bind(('', self.port))
-        self.sock.listen()
-        self.chat_sock = socket()
-        self.chat_sock.bind(('', self.chat_port))
-        self.chat_sock.listen()
+        self.setup_sockets()
 
     def accept_conn(self, sock, return_val_holder):
         # pass an empty list to return_val_holder
@@ -79,6 +74,16 @@ class Server:
 
     def send_to_conn(self, conn, msg):
         conn.sendall((msg + '\x03').encode('utf-8'))
+
+    def setup_sockets(self):
+        self.sock = socket.socket()
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind(('', self.port))
+        self.sock.listen()
+        self.chat_sock = socket.socket()
+        self.chat_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.chat_sock.bind(('', self.chat_port))
+        self.chat_sock.listen()
 
     def terminal_loop(self):
         while True:

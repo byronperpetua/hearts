@@ -1,6 +1,7 @@
 FEATURE                                         PRIORITY    DIFFICULTY
 ----------------------------------------------------------------------
 autoclaim                                       M           M
+solve set_hand flicker                          M           M
 quit                                            L           M
 hide card image after playing                   L           M
 fix emoji chat crash                            L           M
