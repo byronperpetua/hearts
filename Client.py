@@ -42,14 +42,12 @@ class Client:
 
     def receive(self):
         r = self.sock.recv(self.bufsize).decode('utf-8')
-        # print('<-', r)
         return r
 
     def receive_chat(self):
         return self.chat_sock.recv(self.bufsize).decode('utf-8')
 
     def send(self, msg):
-        # print(msg, '->')
         self.sock.sendall(msg.encode('utf-8'))
 
     def send_chat(self, msg):

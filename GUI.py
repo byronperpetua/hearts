@@ -167,6 +167,7 @@ class GUI:
             self.set_mode('wait')
             self.client.send(' '.join([self.hand[i] for i in self.selected]))
             self.selected = []
+            self.unhighlight_username_labels()
 
     def poll_loop(self, delay_ms=50):
         if not self.queue.empty():
@@ -224,6 +225,7 @@ class GUI:
                 self.enable_button(b)
                 self.unhighlight_button(b)
             self.highlight_button(self.submit_button)
+            self.highlight_label(self.username_labels[0])
             self.window.after(delay_ms, self.disable_button,
                               self.submit_button)
         elif new_mode == 'play':
