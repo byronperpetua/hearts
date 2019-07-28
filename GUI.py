@@ -25,6 +25,8 @@ class GUI:
             self.image_dir = dirname(__file__) + '/images/'
         self.setup_gui()
         self.set_mode('wait')
+        self.poll_loop()
+        self.window.mainloop()
 
     def add_to_queue(self, msg):
         self.queue.put(msg)
@@ -231,7 +233,6 @@ class GUI:
         elif new_mode == 'play':
             for b in self.card_buttons:
                 self.enable_button(b)
-                self.unhighlight_button(b)
             self.highlight_label(self.username_labels[0])
             self.window.after(delay_ms, self.disable_button,
                               self.submit_button)
@@ -244,7 +245,8 @@ class GUI:
         full_score_str = '  '.join([s + ' '*(3-len(s)) for s in score_strs])
         self.round_scores.configure(text=self.round_scores['text'] + '\n'
                                     + full_score_str)
-        self.window.after(delay_ms, self.unhighlight_username_labels)
+        # causes first passing player to have label unhighlighted
+        self.window.after(delay_ms, self.unhighlight_username_labels) 
 
     def set_usernames(self, usernames):
         self.usernames = usernames
@@ -365,10 +367,6 @@ class GUI:
         time_str = '{}:{:0>2d}'.format(seconds // 60, seconds % 60)
         self.time_labels[self.usernames.index(username)].configure(
             text=time_str)
-
-    def start(self):
-        self.poll_loop()
-        self.window.mainloop()
 
     def unhighlight_button(self, button):
         button.configure(highlightbackground=self.bg_color)

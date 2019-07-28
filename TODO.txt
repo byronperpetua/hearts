@@ -1,5 +1,6 @@
 FEATURE                                         PRIORITY    DIFFICULTY
 ----------------------------------------------------------------------
+fix first passer label unhighlight              L           L
 autoclaim                                       M           M
 quit                                            L           M
 hide card image after playing                   L           M

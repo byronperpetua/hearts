@@ -59,7 +59,6 @@ class Server:
 
     def recv_from_conn(self, conn):
         r = conn.recv(self.bufsize).decode('utf-8')
-        # print('<-*', r)
         return r
 
     def request(self, player_num, msg):
@@ -68,7 +67,6 @@ class Server:
 
     def send(self, player_num, msg, delay_sec=0.05):
         self.send_to_conn(self.conns[player_num], msg)
-        # print(msg, '*->', player_num)
         # Delay may be unnecessary with the '\x03' message separator
         sleep(delay_sec)
 
