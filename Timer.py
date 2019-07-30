@@ -14,11 +14,11 @@ class Timer:
         self.update_time()
         self.player_num = None
 
-    # Wait time is not exact, just short enough that it appears smooth
-    def reset_tick_timer(self, wait_time=0.1):
+    def reset_tick_timer(self):
         if self.tick_timer is not None:
             self.tick_timer.cancel()
-        self.tick_timer = threading.Timer(wait_time, self.tick)
+        self.tick_timer = threading.Timer(1 - time() + self.last_checkpoint,
+                                          self.tick)
         self.tick_timer.start()
 
     def set_player(self, new_player_num):
