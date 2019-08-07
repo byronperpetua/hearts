@@ -10,15 +10,18 @@ from time import sleep
 
 class GUI:
     def __init__(self, client):
+        self.window = tk.Tk()
         self.client = client
         self.queue = Queue()
         self.selected = []
+        self.round_scores = None
         self.current_trick = [None] * 4
         self.last_trick = [None] * 4
         self.lockout = False
-        self.bg_color = 'dark green'
-        self.fg_color = 'white'
-        self.hl_color = 'dodger blue'
+        self.bg_color = '#104010'
+        self.fg_color = '#e0e0e0'
+        self.fg_color2 = '#608060'
+        self.hl_color = '#5080c0'
         if getattr(sys, 'frozen', False):
             self.image_dir = sys._MEIPASS + '/images/'
         else:
@@ -79,7 +82,7 @@ class GUI:
     def enable_button(self, button):
         button.configure(state='normal')
 
-    def end_trick(self, winner_username, delay_ms=2000):
+    def end_trick(self, winner_username, delay_ms=1500):
         def clear_cards():
             for c in self.card_labels:
                 c.configure(image=self.images['blank'])
@@ -97,7 +100,7 @@ class GUI:
 
     def flash(self, element, highlight_fn, unhighlight_fn, delay_ms=2000):
         highlight_fn(element)
-        element.after(delay_ms, unhighlight_fn, element)
+        self.window.after(delay_ms, unhighlight_fn, element)
 
     def highlight_button(self, button):
         # First one only works on Mac, second one only works on Windows
@@ -167,6 +170,10 @@ class GUI:
     def on_last_trick_click(self):
         if self.last_trick[0] is not None:
             self.last_trick_popup()
+            
+    def on_round_scores_click(self):
+        if self.round_scores is not None:
+            self.round_scores_popup()
 
     def on_submit_click(self):
         if self.mode == 'pass' and len(self.selected) == 3:
@@ -207,6 +214,17 @@ class GUI:
             elif msg_type.startswith('a?'): # request add or subtract
                 self.moonshot_popup()
         self.window.after(delay_ms, self.poll_loop)
+        
+    def round_scores_popup(self):
+        popup = tk.Toplevel(self.window)
+        popup.attributes('-topmost', True)
+        popup.title('Round scores')
+        popup.resizable(False, False)
+        popup.grab_set()
+        tk.Label(popup, text=self.round_scores, font=('Courier', 14)).grid(
+            row=0, column=0)
+        tk.Button(popup, text='Close', command=popup.destroy).grid(
+            row=1, column=0, sticky='ew')
     
     def set_hand(self, cards):
         self.hand = cards
@@ -245,22 +263,22 @@ class GUI:
             self.window.after(short_delay_ms, self.disable_button,
                               self.submit_button)
 
-    def set_scores(self, score_data, delay_ms=2000):
+    def set_scores(self, score_data, delay_ms=1500):
         score_strs = [None]*4
         for i in range(0, 8, 2):
             player_num = self.usernames.index(score_data[i])
+            self.score_labels[player_num].configure(text=score_data[i+1])
             score_strs[player_num] = score_data[i+1]
-        full_score_str = '  '.join([s + ' '*(3-len(s)) for s in score_strs])
-        self.round_scores.configure(text=self.round_scores['text'] + '\n'
-                                    + full_score_str)
+        self.round_scores += '\n' + '  '.join([s + ' '*(8-len(s)) 
+                                               for s in score_strs])
         self.window.after(delay_ms, self.unhighlight_last_trick_winner)           
 
     def set_usernames(self, usernames):
         self.usernames = usernames
         for i in range(len(self.usernames)):
             self.username_labels[i].configure(text=self.usernames[i])
-        self.round_scores.configure(
-            text='  '.join([u[:3] + ' '*(3-len(u)) for u in self.usernames]))
+        self.round_scores = '  '.join([u[:8] + ' '*(8-len(u))
+                                       for u in self.usernames])
 
     def setup_chat_window(self):
         self.chat_window = tk.Toplevel(self.window)
@@ -279,7 +297,6 @@ class GUI:
         self.chat_window.rowconfigure(0, weight=1)
 
     def setup_gui(self):
-        self.window = tk.Tk()
         self.window.title('Hearts')
         self.window.configure(bg=self.bg_color)
         self.window.resizable(False, False)
@@ -288,69 +305,82 @@ class GUI:
             self.images[f[:-4]] = tk.PhotoImage(file=self.image_dir+f)
         self.username_labels = [None]*4
         self.time_labels = [None]*4
+        self.score_labels = [None]*4
         self.card_labels = [None]*4
         self.card_buttons = []
         self.username_labels[0] = tk.Label(
             self.window, text='', bg=self.bg_color, fg=self.fg_color)
-        self.username_labels[0].grid(row=7, column=5, columnspan=3, sticky='s')
+        self.username_labels[0].grid(row=9, column=5, columnspan=3, sticky='s')
+        self.score_labels[0] = tk.Label(
+            self.window, text='0', bg=self.bg_color, fg=self.fg_color)
+        self.score_labels[0].grid(row=10, column=6)
         self.time_labels[0] = tk.Label(
-            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color)
-        self.time_labels[0].grid(row=8, column=6, sticky='n')
+            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color2)
+        self.time_labels[0].grid(row=11, column=6, sticky='n')
         self.card_labels[0] = tk.Label(
             self.window, image=self.images['blank'], bg=self.bg_color,
             fg=self.fg_color)
-        self.card_labels[0].grid(row=6, column=6)
+        self.card_labels[0].grid(row=8, column=6)
         self.username_labels[1] = tk.Label(
             self.window, text='', bg=self.bg_color, fg=self.fg_color)
-        self.username_labels[1].grid(row=3, column=2, columnspan=2, sticky='se')
+        self.username_labels[1].grid(row=4, column=2, columnspan=2, sticky='se')
+        self.score_labels[1] = tk.Label(
+            self.window, text='0', bg=self.bg_color, fg=self.fg_color)
+        self.score_labels[1].grid(row=5, column=3, sticky='e')
         self.time_labels[1] = tk.Label(
-            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color)
-        self.time_labels[1].grid(row=4, column=3, sticky='ne')
+            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color2)
+        self.time_labels[1].grid(row=6, column=3, sticky='ne')
         self.card_labels[1] = tk.Label(
             self.window, image=self.images['blank'], bg=self.bg_color,
             fg=self.fg_color)
-        self.card_labels[1].grid(row=3, column=4, rowspan=2)
+        self.card_labels[1].grid(row=4, column=4, rowspan=3)
         self.username_labels[2] = tk.Label(
             self.window, text='', bg=self.bg_color, fg=self.fg_color)
         self.username_labels[2].grid(row=0, column=5, columnspan=3, sticky='s')
+        self.score_labels[2] = tk.Label(
+            self.window, text='0', bg=self.bg_color, fg=self.fg_color)
+        self.score_labels[2].grid(row=1, column=6)
         self.time_labels[2] = tk.Label(
-            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color)
-        self.time_labels[2].grid(row=1, column=6, sticky='n')
+            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color2)
+        self.time_labels[2].grid(row=2, column=6, sticky='n')
         self.card_labels[2] = tk.Label(
             self.window, image=self.images['blank'], bg=self.bg_color,
             fg=self.fg_color)
-        self.card_labels[2].grid(row=2, column=6)
+        self.card_labels[2].grid(row=3, column=6)
         self.username_labels[3] = tk.Label(
             self.window, text='', bg=self.bg_color, fg=self.fg_color)
-        self.username_labels[3].grid(row=3, column=9, columnspan=2, sticky='sw')
+        self.username_labels[3].grid(row=4, column=9, columnspan=2, sticky='sw')
+        self.score_labels[3] = tk.Label(
+            self.window, text='0', bg=self.bg_color, fg=self.fg_color)
+        self.score_labels[3].grid(row=5, column=9, sticky='w')
         self.time_labels[3] = tk.Label(
-            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color)
-        self.time_labels[3].grid(row=4, column=9, sticky='nw')
+            self.window, text='0:00', bg=self.bg_color, fg=self.fg_color2)
+        self.time_labels[3].grid(row=6, column=9, sticky='nw')
         self.card_labels[3] = tk.Label(
             self.window, image=self.images['blank'], bg=self.bg_color,
             fg=self.fg_color)
-        self.card_labels[3].grid(row=3, column=8, rowspan=2)
+        self.card_labels[3].grid(row=4, column=8, rowspan=3)
         for i in range(13):
             self.card_buttons.append(tk.Button(
                 self.window, image=self.images['blank'],
                 command=partial(self.on_card_click, i),
                 highlightthickness=5, highlightbackground=self.bg_color))
-            self.card_buttons[i].grid(row=9, column=i)
-        self.submit_button = tk.Button(self.window, text='Submit\nPass',
-                                       command=self.on_submit_click,
-                                       state='disabled', highlightthickness=5)
-        self.submit_button.grid(row=8, column=12)
-        self.last_trick_button = tk.Button(self.window,
-                                           command=self.on_last_trick_click,
-                                           text='Show Last\nTrick')
-        self.last_trick_button.grid(row=0, column=12)
+            self.card_buttons[i].grid(row=12, column=i)
+        self.submit_button = tk.Button(
+            self.window, text='Submit\nPass', command=self.on_submit_click,
+            state='disabled', highlightthickness=5)
+        self.submit_button.grid(row=10, column=12, rowspan=2, sticky='ew')
+        self.last_trick_button = tk.Button(
+            self.window, command=self.on_last_trick_click, text='Last Trick',
+            highlightbackground=self.bg_color)
+        self.last_trick_button.grid(row=0, column=12, rowspan=1, sticky='ew')
+        self.round_scores_button = tk.Button(
+            self.window, command=self.on_round_scores_click, text='Scores',
+            highlightbackground=self.bg_color)
+        self.round_scores_button.grid(row=1, column=12, rowspan=1, sticky='ew')
         self.status_bar = tk.Label(self.window, text='', bg=self.bg_color,
                                    fg=self.fg_color)
         self.status_bar.grid(row=0, column=0, columnspan=6, sticky='w', padx=5)
-        self.round_scores = tk.Label(self.window, text='', font='Courier',
-                                     bg=self.bg_color, fg=self.fg_color)
-        self.round_scores.grid(row=2, column=11, rowspan=6, columnspan=2,
-                               sticky='nw')
         self.setup_chat_window()
         self.connect_popup()
 
