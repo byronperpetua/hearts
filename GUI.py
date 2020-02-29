@@ -302,7 +302,8 @@ class GUI:
         self.window.resizable(False, False)
         self.images = {}
         for f in listdir(self.image_dir):
-            self.images[f[:-4]] = tk.PhotoImage(file=self.image_dir+f)
+            if f[-4:] == '.png':
+                self.images[f[:-4]] = tk.PhotoImage(file=self.image_dir+f)
         self.username_labels = [None]*4
         self.time_labels = [None]*4
         self.score_labels = [None]*4

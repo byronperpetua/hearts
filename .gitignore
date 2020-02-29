@@ -4,3 +4,4 @@ dist/*
 old/*
 *.spec
 *.csv
+*.pyc

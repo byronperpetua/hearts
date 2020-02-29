@@ -2,6 +2,7 @@ from Card import Card
 from copy import deepcopy
 from Hand import Hand
 from threading import Thread
+from time import sleep
 
 class Round:
     def __init__(self, game, pass_dir, num_tricks=13):
@@ -37,6 +38,7 @@ class Round:
                 if not pass_threads[i].is_alive():
                     players_left.remove(i)
                     self.server.broadcast('g:' + self.server.usernames[i])
+            sleep(0.05)
         for i in range(self.num_players):
             h = Hand(pass_msg_holders[i][0])
             self.passes.append(h)
